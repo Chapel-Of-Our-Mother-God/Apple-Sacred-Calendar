@@ -1,1 +1,273 @@
+THE CALENDAR OF OUR MOTHER GOD — sacred date widget
+  To embed in a page, copy three things:
+    1. the <style> block
+    2. the <div class="som-widget"> markup
+    3. the widget <script> block
+  Panel is 190px wide, matching the sidebar buttons.
+  No other files, no fonts to load, no dependencies.
+  Colours are sampled from the mother-god.com front page and
+  are all set in one block at the top of the <style>.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Calendar of Our Mother God</title>
 
+<style>
+/* ---- theme: every colour and face is set here ----
+   Colours are sampled from the mother-god.com front page:
+     #eaf2d9  the pale sage of the sidebar buttons   -> panel
+     #c0d68c  the green of the MAIN ARTICLES bars     -> rule
+     #4b4b4b  the body text ink                       -> ink
+     #808a8f  the sidebar label grey                  -> dim
+   The accent is derived, not sampled: the bar green is too pale to
+   read as text, so it is darkened to 52% (contrast 4.7 on the
+   panel) for the month name and the feast.                          */
+.som-widget {
+  --som-ground:   #eaf2d9;
+  --som-ink:      #4b4b4b;
+  --som-accent:   #636f48;
+  --som-dim:      #808a8f;
+  --som-rule:     #c0d68c;
+
+  /* Both stacks are the site's own declared body font. */
+  --som-display:  Georgia, "Times New Roman", Times, serif;
+  --som-body:     Georgia, "Times New Roman", Times, serif;
+}
+
+/* ---- frame ---- */
+.som-widget {
+  background: var(--som-ground);
+  color: var(--som-ink);
+  font-family: var(--som-body);
+  box-sizing: border-box;
+  max-width: 190px;
+  margin: 0 auto;
+  padding: 12px 12px 11px;
+  text-align: center;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+.som-widget *, .som-widget *::before, .som-widget *::after { box-sizing: inherit; }
+
+/* ---- the date ---- */
+.som-month {
+  font-family: var(--som-display);
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--som-accent);
+  margin: 0 0 3px;
+  padding-left: 0.13em;
+}
+.som-day {
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1;
+  margin: 0;
+}
+.som-day.som-nodate { font-size: 17px; letter-spacing: 0.04em; }
+
+/* ---- lines beneath ---- */
+.som-season {
+  font-family: var(--som-display);
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--som-dim);
+  margin: 8px 0 0;
+}
+.som-feast {
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--som-accent);
+  margin: 8px 0 0;
+  text-wrap: balance;
+}
+.som-profane {
+  font-size: 10.5px;
+  color: var(--som-dim);
+  margin: 9px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--som-rule);
+}
+.som-widget p:empty { display: none; }
+
+
+</style>
+</head>
+<body style="margin:0;background:#ffffff;min-height:100vh;display:flex;align-items:center;">
+
+<!-- ============ markup ============ -->
+<div class="som-widget" id="som-widget">
+  <p class="som-month" id="som-month"></p>
+  <p class="som-day" id="som-day"></p>
+  <p class="som-season" id="som-season"></p>
+  <p class="som-feast" id="som-feast"></p>
+  <p class="som-profane" id="som-profane"></p>
+</div>
+<!-- ========== end markup ========== -->
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------------------------------------------------------------
+     THE CALENDAR
+     Thirteen months of twenty-eight days. The year opens on
+     Culverine 1 (21 March). The Hiatus follows Moura 28 and belongs
+     to no month; two days in leap years. Moura carries no fixed
+     profane dates and absorbs the leap day, which is why Kala falls
+     on 19 March in common years and 18 March in leap years. All of
+     that follows from counting days out from Culverine 1; there is
+     no special case in the code below.
+  --------------------------------------------------------------- */
+
+  var MONTHS = [
+    ["Culverine", "Spring"], ["Maia", "Spring"],   ["Hera", "Spring"],
+    ["Rosea",     "Summer"], ["Kerea", "Summer"],  ["Vaskaras", "Summer"],
+    ["Abolan",    "Autumn"], ["Vois", "Autumn"],   ["Werd\u00EB", "Autumn"],
+    ["Astraea",   "Winter"], ["Herth\u00EB", "Winter"], ["Brigh\u00EB", "Winter"],
+    ["Moura", "Moura"]
+  ];
+
+  /* The element belongs to the season. */
+  var ELEMENTS = {
+    "Spring": "Water",
+    "Summer": "Fire",
+    "Autumn": "Earth",
+    "Winter": "Air",
+    "Moura":  "Aether"
+  };
+
+  /* Keyed "monthIndex:day". Names as given in the shortened-names
+     calendar, with one correction: Herthe 3 read "Nativity \u2014 3",
+     duplicating Herthe 2; it is the fourth night. */
+  var FEASTS = {
+    "0:1":   "Eastre",
+    "0:5":   "Lady Day",
+    "1:1":   "Maia's Day",
+    "1:14":  "Exaltation Day",
+    "2:1":   "Sai Rayanna Day",
+    "2:10":  "Florimaia",
+    "3:9":   "Rosa Mundi",
+    "4:22":  "Chelanya",
+    "5:16":  "Werde\u2019s Day",
+    "6:17":  "Cuivanya",
+    "8:1":   "Tamala \u2014 first day",
+    "8:2":   "Tamala \u2014 second day",
+    "8:3":   "Tamala \u2014 third day",
+    "8:23":  "Feast of Artemis",
+    "9:1":   "Advent",
+    "9:11":  "The Conception",
+    "9:28":  "Nativity Day",
+    "10:1":  "Nativity \u2014 2",
+    "10:2":  "Nativity \u2014 3",
+    "10:3":  "Nativity \u2014 4",
+    "10:4":  "Nativity \u2014 5",
+    "10:5":  "Nativity \u2014 6",
+    "10:6":  "The Day of Sai Herthe",
+    "10:7":  "Nativity \u2014 8",
+    "10:8":  "Nativity \u2014 9",
+    "10:9":  "Nativity \u2014 10",
+    "10:10": "Nativity \u2014 11",
+    "10:11": "Duodecima - 12",
+    "10:12": "The Epiphany",
+    "11:11": "Luciad",
+    "11:28": "Moura Eve",
+    "12:1":  "Moura Day",
+    "12:14": "Med Moura",
+    "12:28": "Kala"
+  };
+
+  var DAY_MS = 86400000;
+
+  /* Convert a Gregorian date to the sacred date.
+     Pass a Date; the local calendar day is used. */
+  function toSacredDate(date) {
+    var y = date.getFullYear(),
+        t = Date.UTC(y, date.getMonth(), date.getDate()),
+        openYear = (t >= Date.UTC(y, 2, 21)) ? y : y - 1,
+        index = Math.round((t - Date.UTC(openYear, 2, 21)) / DAY_MS);
+
+    if (index >= 364) {
+      return { hiatus: true, index: index };
+    }
+    var mi = Math.floor(index / 28),
+        dd = (index % 28) + 1,
+        season = MONTHS[mi][1];
+    return {
+      hiatus: false,
+      index: index,
+      monthIndex: mi,
+      month: MONTHS[mi][0],
+      season: season,
+      element: ELEMENTS[season],
+      day: dd,
+      feast: FEASTS[mi + ":" + dd] || null
+    };
+  }
+
+  function profaneDate(date) {
+    return date.getDate() + " " +
+      ["January","February","March","April","May","June","July",
+       "August","September","October","November","December"][date.getMonth()] +
+      " " + date.getFullYear();
+  }
+
+  function set(id, text) { document.getElementById(id).textContent = text || ""; }
+
+  function render(date) {
+    var sd = toSacredDate(date),
+        dayEl = document.getElementById("som-day");
+
+    if (sd.hiatus) {
+      set("som-month", "The Hiatus");
+      dayEl.textContent = "\u2014";
+      dayEl.className = "som-day som-nodate";
+      set("som-season", "");                    /* no month, no season, no element */
+      set("som-feast", "The Day that Has No Date");
+    } else {
+      set("som-month", sd.month);
+      dayEl.textContent = sd.day;
+      dayEl.className = "som-day";
+      set("som-season", sd.season + " \u00B7 " + sd.element);
+      set("som-feast", sd.feast);
+    }
+    set("som-profane", profaneDate(date));
+  }
+
+  /* Preview any date by adding ?date=YYYY-MM-DD to the address, e.g.
+     ...widget.html?date=2026-12-25 for Nativity, or ?date=2027-03-20
+     for the Hiatus. Without it the widget shows today. Delete this
+     function and the two lines marked below to remove the facility. */
+  function previewDate() {
+    var m = /[?&]date=(\d{4})-(\d{2})-(\d{2})/.exec(window.location.search);
+    if (!m) { return null; }
+    var d = new Date(+m[1], +m[2] - 1, +m[3]);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  /* Draw now, then redraw when the local day turns over. */
+  function start() {
+    var preview = previewDate();                 /* remove for live use */
+    render(preview || new Date());
+    if (preview) { return; }                     /* remove for live use */
+    var now = new Date(),
+        nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 5);
+    setTimeout(start, nextMidnight - now);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start);
+  } else {
+    start();
+  }
+
+  window.toSacredDate = toSacredDate;
+})();
+</script>
+</body>
+</html>
