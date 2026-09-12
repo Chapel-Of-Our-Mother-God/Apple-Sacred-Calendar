@@ -121,6 +121,13 @@
     try { localStorage.setItem(NOTIFY_SILENT_KEY, val ? "1" : "0"); } catch (_) {}
   }
 
+  // True when the app is running as an installed standalone PWA, not a browser tab.
+  // iOS Safari sets navigator.standalone; Chrome/Android uses the display-mode media query.
+  function isStandalone() {
+    if (navigator.standalone === true) return true;
+    return window.matchMedia('(display-mode: standalone)').matches;
+  }
+
   // On every launch with an active subscription: silently sync timezone and
   // silent_supported to the Worker if either value has changed since subscribe time.
   function checkTimezoneUpdate(sub) {
@@ -166,7 +173,7 @@
         elDismiss.hidden       = true;
         elNotify.hidden        = false;
         checkTimezoneUpdate(sub);
-      } else if (Notification.permission !== "denied" && !notifyDismissed()) {
+      } else if (isStandalone() && Notification.permission === "default" && !notifyDismissed()) {
         elNotify.hidden = false;
       }
     }).catch(function () {});
