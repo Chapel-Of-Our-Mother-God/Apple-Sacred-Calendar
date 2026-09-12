@@ -5,16 +5,16 @@ compatibility_date = "2024-09-25"
 # @block65/webcrypto-web-push uses Web Crypto API only — nodejs_compat not required.
 
 [triggers]
-crons = ["*/30 * * * *"]
+crons = ["*/5 * * * *"]
 
 [[d1_databases]]
 binding = "DB"
-database_name = "sacred-calendar-notifications"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+database_name = "chapel-sacred-calendar"
+database_id = "328b0634-0caf-41a8-a96b-1ab9985df67a"
 
 [vars]
 # Contact address shown to push services.  Replace before deploying.
-VAPID_SUBJECT = "mailto:REPLACE@EXAMPLE.COM"
+VAPID_SUBJECT = "https://mother-god.com"
 
 # VAPID key pair — set as Worker secrets, never committed to source:
 #   wrangler secret put VAPID_PUBLIC_KEY

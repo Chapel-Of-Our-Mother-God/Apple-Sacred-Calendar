@@ -3,7 +3,7 @@
 // works fully offline after the first install.
 // Bump CACHE_NAME on every release to force old cached files to be replaced.
 
-const CACHE_NAME = "sacred-calendar-v3";
+const CACHE_NAME = "sacred-calendar-v4";
 
 const ASSETS = [
   "./",

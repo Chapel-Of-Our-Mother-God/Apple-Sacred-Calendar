@@ -77,9 +77,9 @@
   // Generate a VAPID key pair (requires Node.js): npx web-push generate-vapid-keys
   // Then store as Worker secrets: wrangler secret put VAPID_PUBLIC_KEY  (and VAPID_PRIVATE_KEY)
   // Paste the base64url public key below.
-  var VAPID_PUBLIC_KEY = "REPLACE_WITH_YOUR_VAPID_PUBLIC_KEY";
+  var VAPID_PUBLIC_KEY = "BKOvUaVaQHYnEsWCE0GCoDlcksdgSPMELZWzey8yBwlzjm7EOM7iB2_9uiNOw0DTqgUERU7LxcE97TzPbIq55Kg";
   // Your deployed Worker URL, e.g. "https://sacred-calendar-notifications.example.workers.dev"
-  var WORKER_URL       = "REPLACE_WITH_YOUR_WORKER_URL";
+  var WORKER_URL       = "https://sacred-calendar-notifications.chapel-sacred-calendar.workers.dev";
 
   function urlBase64ToUint8Array(b64) {
     var padding = "=".repeat((4 - b64.length % 4) % 4);
