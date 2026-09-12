@@ -1,0 +1,24 @@
+{
+  "name": "Chapel Sacred Calendar",
+  "short_name": "Sacred Calendar",
+  "id": "/Apple-Sacred-Calendar/",
+  "start_url": "/Apple-Sacred-Calendar/",
+  "scope": "/Apple-Sacred-Calendar/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#636f48",
+  "background_color": "#eaf2d9",
+  "description": "The sacred calendar of Our Mother God — current sacred date, feast days and festival links.",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

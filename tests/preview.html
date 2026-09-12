@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sacred Calendar — Preview</title>
+<style>
+  :root {
+    --ground: #eaf2d9;
+    --ink:    #4b4b4b;
+    --accent: #636f48;
+    --dim:    #808a8f;
+    --rule:   #c0d68c;
+  }
+  body {
+    font-family: Georgia, "Times New Roman", Times, serif;
+    background: #f0f0e8;
+    margin: 0;
+    padding: 2rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    color: var(--ink);
+  }
+  .controls {
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    color: var(--dim);
+    max-width: 420px;
+    width: 100%;
+    line-height: 1.6;
+  }
+  .controls code { font-size: 0.75rem; background: #f4f4f4; padding: 1px 4px; border-radius: 3px; }
+  .cal-card {
+    background: var(--ground);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 2rem 1.5rem;
+    max-width: 320px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .cal-month  { font-size: 1.1rem; color: var(--accent); margin: 0 0 0.15rem; letter-spacing: 0.03em; }
+  .cal-day    { font-size: 4rem; font-weight: normal; color: var(--ink); margin: 0; line-height: 1; }
+  .cal-season { font-size: 0.85rem; color: var(--dim); margin: 0.25rem 0 0; }
+  .cal-rule   { border: none; border-top: 1px solid var(--rule); margin: 1rem 0; }
+  .cal-feast  { font-size: 0.95rem; color: var(--accent); margin: 0 0 0.5rem; min-height: 1.2em; }
+  .cal-feast-link {
+    display: inline-block;
+    font-size: 0.8rem;
+    color: var(--accent);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 0.3rem 0.7rem;
+    text-decoration: none;
+    margin-bottom: 0.75rem;
+  }
+  .cal-feast-link:hover { background: var(--rule); }
+  .cal-profane { font-size: 0.8rem; color: var(--dim); margin: 0; }
+  .cal-card--no-civil .cal-profane { display: none; }
+  .cal-day--text { font-size: 2rem; padding: 1rem 0; }
+
+  .meta {
+    font-size: 0.75rem;
+    color: var(--dim);
+    text-align: center;
+    max-width: 420px;
+    width: 100%;
+  }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <strong>Preview mode</strong> — loads the actual production calendar files.<br>
+  <code>?date=YYYY-MM-DD</code> — render a specific date at noon<br>
+  <code>?datetime=YYYY-MM-DDTHH:MM</code> — render with time (tests 05:00 boundary)
+</div>
+
+<div class="cal-card" id="cal-card">
+  <p class="cal-month"  id="cal-month"></p>
+  <p class="cal-day"    id="cal-day"></p>
+  <p class="cal-season" id="cal-season"></p>
+  <div class="cal-rule" role="separator"></div>
+  <p class="cal-feast"  id="cal-feast"></p>
+  <a class="cal-feast-link" id="cal-feast-link" target="_blank"
+     rel="noopener noreferrer" hidden></a>
+  <p class="cal-profane" id="cal-profane"></p>
+</div>
+
+<p class="meta" id="cal-meta"></p>
+
+<!-- Load the ACTUAL production calendar files — no calendar logic in this file -->
+<script src="../calendar/data.js"></script>
+<script src="../calendar/engine.js"></script>
+<script src="../calendar/lunar.js"></script>
+
+<script>
+// ---------------------------------------------------------------------------
+// PREVIEW RENDER
+// All calendar functions are accessed through window.SacredCalendar,
+// populated exclusively by the production data.js and engine.js files above.
+// No calendar arithmetic or canonical data is defined here.
+// ---------------------------------------------------------------------------
+(function () {
+  "use strict";
+  var C = window.SacredCalendar;
+
+  var elCard    = document.getElementById("cal-card");
+  var elMonth   = document.getElementById("cal-month");
+  var elDay     = document.getElementById("cal-day");
+  var elSeason  = document.getElementById("cal-season");
+  var elFeast   = document.getElementById("cal-feast");
+  var elLink    = document.getElementById("cal-feast-link");
+  var elProfane = document.getElementById("cal-profane");
+  var elMeta    = document.getElementById("cal-meta");
+
+  var now = C.parseTestDate() || new Date();
+  var sd  = C.getSacredDay(now);
+
+  // Show what moment we're displaying
+  var pad = function(n) { return n < 10 ? "0" + n : String(n); };
+  var timeStr = now.getFullYear() + "-"
+              + pad(now.getMonth() + 1) + "-"
+              + pad(now.getDate()) + "T"
+              + pad(now.getHours()) + ":" + pad(now.getMinutes());
+  var lo0 = C.getLunarObservance(now);
+  var lunarLabel = lo0.type ? " | lunar: " + lo0.type : " | lunar: none";
+  var feastLabel = sd.feast ? " | feast: " + sd.feast.name : "";
+  elMeta.textContent = "Rendering: " + timeStr
+    + " → effective date "
+    + (now.getHours() < 5 ? "previous day" : "same day")
+    + lunarLabel + feastLabel;
+
+  if (sd.hiatus) {
+    elMonth.textContent  = "The Hiatus";
+    elDay.textContent    = "—";
+    elDay.className      = "cal-day cal-day--text";
+    elSeason.textContent = "";
+    elFeast.textContent  = "The Day that Has No Date";
+    elLink.hidden        = true;
+    elCard.classList.add("cal-card--no-civil");
+    return;
+  }
+
+  elDay.className = "cal-day";
+  elMonth.textContent  = sd.month;
+  elDay.textContent    = sd.day;
+  elSeason.textContent = sd.season + " · " + sd.element;
+
+  // Feast (priority) → Lunar observance → nothing
+  if (sd.feast) {
+    elFeast.textContent = sd.feast.name;
+    if (sd.feast.url) {
+      elLink.textContent = "Read about " + sd.feast.name;
+      elLink.href        = sd.feast.url;
+      elLink.hidden      = false;
+    } else {
+      elLink.hidden = true;
+    }
+  } else {
+    var lo = C.getLunarObservance(now);
+    elFeast.textContent = lo.text || "";
+    elLink.hidden       = true;
+  }
+
+  if (sd.monthIndex === 12) {
+    elCard.classList.add("cal-card--no-civil");
+  } else {
+    elCard.classList.remove("cal-card--no-civil");
+    elProfane.textContent = C.profaneDate(C.effectiveLocalDate(now));
+  }
+}());
+</script>
+</body>
+</html>

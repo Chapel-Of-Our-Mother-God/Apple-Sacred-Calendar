@@ -1,0 +1,341 @@
+/* app/app.css
+   Chapel Sacred Calendar — responsive iPhone / iPad application styles.
+   NOT the old 190px sidebar widget; this is a full-viewport standalone app.
+
+   Colour palette (canonical, do not alter):
+     --ground  #eaf2d9   panel / app background
+     --ink     #4b4b4b   main text and day numeral
+     --accent  #636f48   month name, feast name
+     --dim     #808a8f   season/element line, civil date
+     --rule    #c0d68c   divider / border
+*/
+
+/* ── Reset & base ───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ground:  #eaf2d9;
+  --ink:     #4b4b4b;
+  --accent:  #636f48;
+  --dim:     #808a8f;
+  --rule:    #c0d68c;
+  --display: Georgia, "Times New Roman", Times, serif;
+}
+
+html {
+  height: 100%;
+  /* Prevent font-size inflation on iOS rotation */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100%;
+  min-height: 100dvh;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--display);
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Application card ───────────────────────────────────────────── */
+/* Phone portrait: centred, generous padding, fills available height */
+.cal-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 2.5rem 2rem 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+/* ── Month name ─────────────────────────────────────────────────── */
+.cal-month {
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+  padding-left: 0.18em; /* optical kerning for tracking */
+}
+
+/* ── Day numeral ────────────────────────────────────────────────── */
+.cal-day {
+  font-size: clamp(4rem, 20vw, 7rem);
+  font-weight: 400;
+  line-height: 1;
+  color: var(--ink);
+  margin-bottom: 0.3rem;
+}
+
+/* Hiatus / special labels that use a word instead of a numeral */
+.cal-day.cal-day--text {
+  font-size: clamp(1.4rem, 6vw, 2.2rem);
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+
+/* ── Season · Element ───────────────────────────────────────────── */
+.cal-season {
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 1.2rem;
+  padding-left: 0.14em;
+}
+
+/* ── Divider ────────────────────────────────────────────────────── */
+.cal-rule {
+  width: 48px;
+  height: 1px;
+  background: var(--rule);
+  margin: 0 auto 1.2rem;
+}
+
+/* ── Feast name ─────────────────────────────────────────────────── */
+.cal-feast {
+  font-size: clamp(0.95rem, 3vw, 1.15rem);
+  font-style: italic;
+  color: var(--accent);
+  line-height: 1.4;
+  margin-bottom: 0.4rem;
+  /* balance the text when it wraps */
+  text-wrap: balance;
+}
+
+/* Feast as a tappable link — inherit colour so it reads as chapel text */
+.cal-feast a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 1px;
+}
+.cal-feast a:hover,
+.cal-feast a:focus-visible {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+  outline: none;
+}
+
+/* Feast link: read-more button style (shown on feast days with a URL) */
+.cal-feast-link {
+  display: inline-block;
+  margin-top: 0.9rem;
+  padding: 0.45rem 1.1rem;
+  font-size: 0.8rem;
+  font-style: normal;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.cal-feast-link:hover,
+.cal-feast-link:focus-visible {
+  background: var(--rule);
+  color: var(--ink);
+  outline: none;
+}
+.cal-feast-link:active {
+  opacity: 0.75;
+}
+
+/* ── Civil / Gregorian date ─────────────────────────────────────── */
+/* Hidden during Moura and Hiatus — use .cal-card--no-civil class on the card */
+.cal-profane {
+  font-size: 0.8rem;
+  color: var(--dim);
+  margin-top: 1.4rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+  width: 100%;
+  text-align: center;
+}
+
+.cal-card--no-civil .cal-profane {
+  display: none;
+}
+
+/* ── Notification opt-in row ────────────────────────────────────── */
+.cal-notify {
+  margin-top: 1.2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.cal-notify-btn {
+  background: none;
+  border: none;
+  font-family: var(--display);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--rule);
+  -webkit-tap-highlight-color: transparent;
+}
+.cal-notify-btn:hover,
+.cal-notify-btn:focus-visible {
+  color: var(--accent);
+  outline: none;
+}
+.cal-notify-btn[data-state="on"] {
+  text-decoration: none;
+  color: var(--dim);
+  cursor: default;
+}
+.cal-notify-btn--dim {
+  font-size: 0.65rem;
+  opacity: 0.6;
+}
+
+/* ── Hidden utility ─────────────────────────────────────────────── */
+[hidden] { display: none !important; }
+
+/* ── Empty-paragraph safety ─────────────────────────────────────── */
+p:empty { display: none; }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE LAYOUTS
+   ══════════════════════════════════════════════════════════════════ */
+
+/* -- iPhone landscape (short viewport, width ≥ 480, height < 500) -- */
+@media (orientation: landscape) and (max-height: 500px) {
+  body {
+    justify-content: flex-start;
+    padding: 1rem 0;
+  }
+
+  .cal-card {
+    max-width: 600px;
+    padding: 1rem 2rem 1rem;
+    gap: 0;
+  }
+
+  .cal-month {
+    font-size: 0.65rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .cal-day {
+    font-size: clamp(2.8rem, 14vh, 4.5rem);
+    margin-bottom: 0.1rem;
+  }
+
+  .cal-day.cal-day--text {
+    font-size: clamp(1.1rem, 5vh, 1.6rem);
+  }
+
+  .cal-season {
+    font-size: 0.6rem;
+    margin-bottom: 0.7rem;
+  }
+
+  .cal-rule {
+    margin-bottom: 0.7rem;
+  }
+
+  .cal-feast {
+    font-size: clamp(0.8rem, 3vh, 1rem);
+    margin-bottom: 0.2rem;
+  }
+
+  .cal-feast-link {
+    margin-top: 0.5rem;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.7rem;
+  }
+
+  .cal-profane {
+    font-size: 0.7rem;
+    margin-top: 0.7rem;
+    padding-top: 0.6rem;
+  }
+}
+
+/* -- iPad / large tablet (min-width 768px) -- */
+@media (min-width: 768px) {
+  .cal-card {
+    max-width: 560px;
+    padding: 3.5rem 3rem 3rem;
+  }
+
+  .cal-month {
+    font-size: 0.85rem;
+    letter-spacing: 0.22em;
+    margin-bottom: 0.7rem;
+  }
+
+  .cal-day {
+    font-size: clamp(5rem, 14vw, 9rem);
+    margin-bottom: 0.4rem;
+  }
+
+  .cal-day.cal-day--text {
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+  }
+
+  .cal-season {
+    font-size: 0.8rem;
+    letter-spacing: 0.18em;
+    margin-bottom: 1.6rem;
+  }
+
+  .cal-rule {
+    width: 64px;
+    margin-bottom: 1.6rem;
+  }
+
+  .cal-feast {
+    font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+  }
+
+  .cal-feast-link {
+    margin-top: 1.2rem;
+    padding: 0.55rem 1.4rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+  }
+
+  .cal-profane {
+    font-size: 0.9rem;
+    margin-top: 1.8rem;
+    padding-top: 1.2rem;
+  }
+}
+
+/* -- iPad landscape: slightly tighten top/bottom so card doesn't float high -- */
+@media (min-width: 1024px) {
+  .cal-card {
+    max-width: 640px;
+    padding: 4rem 3.5rem 3.5rem;
+  }
+}
+
+/* -- Narrow iPad Split View / Stage Manager narrow window -- */
+@media (max-width: 399px) {
+  .cal-card {
+    padding: 2rem 1.25rem 1.75rem;
+  }
+  .cal-month {
+    font-size: 0.68rem;
+  }
+  .cal-profane {
+    font-size: 0.75rem;
+  }
+}
