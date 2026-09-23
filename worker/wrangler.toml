@@ -12,6 +12,25 @@ binding = "DB"
 database_name = "chapel-sacred-calendar"
 database_id = "328b0634-0caf-41a8-a96b-1ab9985df67a"
 
+[[queues.producers]]
+binding = "PUSH_QUEUE"
+queue   = "sacred-calendar-push"
+
+[[queues.consumers]]
+queue             = "sacred-calendar-push"
+max_batch_size    = 1
+max_batch_timeout = 0
+max_retries       = 2
+dead_letter_queue = "sacred-calendar-push-dlq"
+max_concurrency   = 10
+
+[observability]
+enabled = true
+
+[observability.logs]
+invocation_logs = true
+head_sampling_rate = 1
+
 [vars]
 # Contact address shown to push services.  Replace before deploying.
 VAPID_SUBJECT = "https://mother-god.com"

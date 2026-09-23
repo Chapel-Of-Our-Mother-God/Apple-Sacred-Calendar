@@ -22,3 +22,32 @@ CREATE TABLE IF NOT EXISTS sent_log (
   sacred_date     TEXT NOT NULL,
   PRIMARY KEY (subscription_id, sacred_date)
 );
+
+-- Queue delivery state — per (subscription × effective sacred date).
+-- Tracks the state machine for the Queue fanout path.
+-- status: 'queued' | 'sending' | 'delivered' | 'abandoned'
+-- Scan consumer inserts with 3 explicit params (subscription_id, sacred_date, lease_token);
+-- all other columns default so each INSERT batch stays at 33 rows × 3 = 99 params.
+-- Notification payload is not stored here — it travels through the Queue message body.
+CREATE TABLE IF NOT EXISTS delivery_events (
+  subscription_id       TEXT    NOT NULL,
+  sacred_date           TEXT    NOT NULL,
+  status                TEXT    NOT NULL DEFAULT 'queued',   -- queued|sending|delivered|abandoned
+  lease_token           TEXT,                               -- UUID from scan; verified at claim time; NULL after delivery/abandonment
+  leased_at             INTEGER NOT NULL DEFAULT 0,
+  send_started_at       INTEGER NOT NULL DEFAULT 0,          -- set when claim succeeds
+  lease_generation      INTEGER NOT NULL DEFAULT 1,
+  send_attempt_count    INTEGER NOT NULL DEFAULT 0,
+  claimed_queue_attempt INTEGER,
+  PRIMARY KEY (subscription_id, sacred_date)
+);
+
+-- Scan lock — single row prevents overlapping scan chains.
+-- lock_expires_at is renewed by each scan continuation message.
+-- Cleared on final (empty-results) page; auto-expires after TTL if Worker crashes.
+CREATE TABLE IF NOT EXISTS scan_state (
+  lock_id         TEXT    PRIMARY KEY,
+  locked_at       INTEGER NOT NULL,
+  lock_expires_at INTEGER NOT NULL,
+  run_id          TEXT    NOT NULL
+);

@@ -1,23 +1,64 @@
-// Scheduled handler — runs every 30 minutes via the cron trigger.
-// For each subscription whose next_push_at_utc has passed:
-//   1. Compute the effective local sacred date.
-//   2. Check the sent_log idempotency fence (skip if already sent today).
-//   3. Compute the notification (FEAST > MONTH_START > LUNAR > SUNDAY).
-//   4. Reserve the idempotency slot BEFORE sending.
-//   5. Send push:
-//        ok        → retain reservation, advance schedule
-//        gone      → delete subscription, return (no schedule advance)
-//        transient → DELETE reservation (allow retry on next cron), return
-//   6. If no notification warranted, advance schedule without reserving.
+// Cron producer — runs every 5 minutes via the Worker cron trigger.
+// Acquires the D1 scan lock and enqueues one root {type:"scan"} message
+// that fans out into scan → deliver chains via Cloudflare Queues.
+//
+// The lock prevents overlapping root scan chains if the Worker is invoked
+// while a previous chain is still running.  TTL ensures auto-recovery from
+// crashes: a new cron invocation will take over after SCAN_LOCK_TTL_MS.
+//
+// D1 queries: 2 (SELECT lock + UPSERT lock) + 1 Queue enqueue = 2 D1 queries.
 
-import { computeNotification } from './notify.js';
-import { sendPushNotification }  from './push.js';
 import { sacredDateKey, nextPushAtUtc } from './util.js';
+import { validateVapid } from './vapid.js';
 
-// Re-use the calendar namespace set up by notify.js's side-effect imports.
-const C = globalThis.SacredCalendar;
+const SCAN_LOCK_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 export async function handleScheduled(env) {
+  // Fail fast: validate VAPID keys before any D1 or Queue activity.
+  if (!validateVapid(env)) return;
+
+  const nowMs  = Date.now();
+
+  // Skip if no subscriptions are currently due — avoids unnecessary Queue ops.
+  const due = await env.DB.prepare(
+    'SELECT 1 FROM subscriptions WHERE next_push_at_utc <= ? LIMIT 1'
+  ).bind(nowMs).first();
+  if (!due) return;
+
+  const runId  = crypto.randomUUID();
+  const expires = nowMs + SCAN_LOCK_TTL_MS;
+
+  // Check for an active lock held by another run.
+  const existing = await env.DB.prepare(
+    'SELECT lock_expires_at FROM scan_state WHERE lock_id=?'
+  ).bind('root').first();
+
+  if (existing && existing.lock_expires_at > nowMs) {
+    // Active lock held by a prior scan chain — skip this cron tick.
+    return;
+  }
+
+  // No lock or expired lock — claim / renew it with this run's ID.
+  await env.DB.prepare(
+    'INSERT INTO scan_state (lock_id, locked_at, lock_expires_at, run_id) VALUES (?,?,?,?) ' +
+    'ON CONFLICT(lock_id) DO UPDATE SET ' +
+    'locked_at=excluded.locked_at, lock_expires_at=excluded.lock_expires_at, run_id=excluded.run_id'
+  ).bind('root', nowMs, expires, runId).run();
+
+  // Enqueue root scan message — cursor starts at (0, '') to scan from the beginning.
+  await env.PUSH_QUEUE.send({
+    type:        'scan',
+    run_id:      runId,
+    scan_now:    nowMs,
+    cursor_time: 0,
+    cursor_id:   ''
+  });
+}
+
+// ── Legacy sequential scheduler (inactive — kept for rollback reference) ─────
+// Never called in the Queue architecture.  Retained so a one-line import swap
+// in index.js can revert to the old behaviour if Queues are unavailable.
+async function handleScheduledLegacy(env) {
   const now   = new Date();
   const nowMs = now.getTime();
 
@@ -27,21 +68,19 @@ export async function handleScheduled(env) {
     privateKey: env.VAPID_PRIVATE_KEY
   };
 
-  // Fetch all subscriptions due for a push (batch up to 500 at a time).
   const { results } = await env.DB.prepare(
     'SELECT id, endpoint, p256dh, auth, timezone, silent_supported, next_push_at_utc ' +
     'FROM subscriptions WHERE next_push_at_utc <= ? LIMIT 500'
   ).bind(nowMs).all();
 
   for (const sub of results) {
-    await processSub(sub, now, vapid, env.DB).catch(err => {
-      // Log and continue; one bad subscription must not abort the batch.
+    await processSubLegacy(sub, now, vapid, env.DB).catch(err => {
       console.error('scheduler: sub', sub.id, err.message);
     });
   }
 }
 
-async function processSub(sub, now, vapid, db) {
+async function processSubLegacy(sub, now, vapid, db) {
   const timezone   = sub.timezone || 'UTC';
   const pushHour   = sub.silent_supported ? 5 : 9;
 
@@ -49,13 +88,11 @@ async function processSub(sub, now, vapid, db) {
   const dateKey    = sacredDateKey(eld);
   const nextPush   = nextPushAtUtc(eld, timezone, pushHour);
 
-  // Idempotency fence: skip if we already sent for this sacred date.
   const logged = await db.prepare(
     'SELECT 1 FROM sent_log WHERE subscription_id = ? AND sacred_date = ?'
   ).bind(sub.id, dateKey).first();
 
   if (logged) {
-    // Already sent today — just advance the schedule if it's stale.
     await db.prepare(
       'UPDATE subscriptions SET next_push_at_utc = ? WHERE id = ?'
     ).bind(nextPush.getTime(), sub.id).run();
@@ -67,8 +104,6 @@ async function processSub(sub, now, vapid, db) {
   if (notification) {
     notification.silent = !!sub.silent_supported;
 
-    // Reserve the idempotency slot BEFORE sending so a duplicate cron run
-    // cannot race into a second send while the first is in flight.
     await db.prepare(
       'INSERT OR IGNORE INTO sent_log (subscription_id, sacred_date) VALUES (?, ?)'
     ).bind(sub.id, dateKey).run();
@@ -76,29 +111,18 @@ async function processSub(sub, now, vapid, db) {
     const result = await sendPushNotification(sub, notification, vapid);
 
     if (result.gone) {
-      // Push service says subscription is no longer valid — remove it.
-      // Reservation remains in sent_log; irrelevant once subscription is deleted.
-      await db.prepare(
-        'DELETE FROM subscriptions WHERE id = ?'
-      ).bind(sub.id).run();
+      await db.prepare('DELETE FROM subscriptions WHERE id = ?').bind(sub.id).run();
       return;
     }
 
     if (result.transient) {
-      // Retryable failure (429/5xx/network). Roll back the idempotency reservation
-      // so the next cron run can attempt this push again.
-      // Do NOT advance next_push_at_utc — subscription stays due so cron picks it up.
       await db.prepare(
         'DELETE FROM sent_log WHERE subscription_id = ? AND sacred_date = ?'
       ).bind(sub.id, dateKey).run();
       return;
     }
-
-    // result.ok — reservation retained, fall through to advance the schedule.
   }
 
-  // Advance the schedule so the cron does not re-visit this subscription
-  // every 30 minutes once today's push window has been handled.
   await db.prepare(
     'UPDATE subscriptions SET next_push_at_utc = ? WHERE id = ?'
   ).bind(nextPush.getTime(), sub.id).run();

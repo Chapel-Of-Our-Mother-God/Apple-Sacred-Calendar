@@ -14,6 +14,7 @@ export async function sendPushNotification(sub, notification, vapid) {
     title:  notification.title,
     body:   notification.body,
     url:    notification.url,
+    tag:    notification.tag,
     silent: notification.silent
   });
 

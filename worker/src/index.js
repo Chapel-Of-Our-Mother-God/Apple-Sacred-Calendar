@@ -1,9 +1,12 @@
 // Cloudflare Worker entry point.
 // Fetch handler: subscribe / unsubscribe / timezone-update API.
-// Scheduled handler: cron → handleScheduled.
+// Scheduled handler: cron → enqueue root scan message.
+// Queue handler: routes scan/deliver messages to their consumers.
 
-import { handleScheduled } from './scheduler.js';
-import { nextPushAtUtc }   from './util.js';
+import { handleScheduled }  from './scheduler.js';
+import { handleScan }       from './scan-consumer.js';
+import { handleDeliver }    from './deliver-consumer.js';
+import { nextPushAtUtc }    from './util.js';
 
 // Re-use the calendar namespace set up by scheduler.js's transitive imports.
 const C = globalThis.SacredCalendar;
@@ -30,6 +33,28 @@ export default {
   // ── Scheduled (cron) ──────────────────────────────────────────────────────
   async scheduled(_event, env, _ctx) {
     await handleScheduled(env);
+  },
+
+  // ── Queue consumer ────────────────────────────────────────────────────────
+  async queue(batch, env, _ctx) {
+    for (const msg of batch.messages) {
+      const { type } = msg.body;
+      try {
+        if (type === 'scan') {
+          await handleScan(msg.body, env);
+          msg.ack();
+        } else if (type === 'deliver') {
+          await handleDeliver(msg.body, env, msg.attempts);
+          msg.ack();
+        } else {
+          console.error('queue: unknown message type:', type);
+          msg.ack();
+        }
+      } catch (err) {
+        console.error('queue: error type=' + type + ':', err.message);
+        msg.retry();
+      }
+    }
   },
 
   // ── HTTP fetch ────────────────────────────────────────────────────────────
