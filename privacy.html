@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#636f48">
+<title>Sacred Calendar Web App — Privacy Policy</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: #eaf2d9;
+    color: #4b4b4b;
+    font-family: Georgia, "Times New Roman", Times, serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 3rem;
+    padding-left:  max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+    padding-top:   max(2rem,   env(safe-area-inset-top));
+  }
+  h1 {
+    font-size: 1.4rem;
+    font-weight: 400;
+    line-height: 1.3;
+    color: #636f48;
+    margin: 0 0 0.3rem;
+  }
+  .updated { font-size: 0.8rem; color: #808a8f; margin: 0 0 1.2rem; }
+  hr { border: 0; border-top: 1px solid #c0d68c; margin: 1.2rem 0; }
+  h2 {
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #636f48;
+    margin: 1.8rem 0 0.4rem;
+  }
+  p, ul { margin: 0 0 0.9rem; font-size: 0.95rem; }
+  ul { padding-left: 1.2rem; }
+  li { margin-bottom: 0.3rem; }
+  a { color: #636f48; text-underline-offset: 3px; text-decoration-color: #c0d68c; }
+  a:hover, a:focus-visible { color: #4b4b4b; }
+  .back { font-size: 0.85rem; margin: 0 0 1.2rem; }
+</style>
+</head>
+<body>
+<main>
+
+<p class="back"><a href="./">&larr; Return to the Sacred Calendar</a></p>
+
+<h1>Sacred Calendar Web App — Privacy Policy</h1>
+<p class="updated">Last updated: September 2026</p>
+<hr>
+
+<p>This policy applies to the Chapel of Our Mother God Sacred Calendar web app (the “app”), including its optional notifications. It does not cover the Android or Windows apps, which have their own policy.</p>
+
+<h2>Using the calendar</h2>
+<p>No account is needed. The app does not ask for your name, email address, postal address or telephone number. The sacred date is worked out on your own device from its clock, and the calendar works offline once the app has loaded.</p>
+<p>The app has no advertising and no analytics, and it does not set cookies. It keeps a few small settings on your device (whether you have dismissed the notification prompt, and your time zone and silent-notification setting as last sent), together with saved copies of its own files so that it can work offline.</p>
+<p>The app’s files are served by GitHub Pages. As with any website, the host of a site receives the ordinary technical details of a request, such as an IP address.</p>
+
+<h2>Notifications (optional)</h2>
+<p>Notifications are off unless you choose “Enable notifications” and allow them. If you do, your browser creates a Web Push subscription, and the app sends the following to the Chapel’s notification service:</p>
+<ul>
+  <li>the push endpoint address, a web address issued by your browser or device’s push service that identifies your installation of the app to that service;</li>
+  <li>the two keys (a public key and an authentication secret) that are needed to encrypt notifications to your device;</li>
+  <li>your time zone (for example “Europe/London”); and</li>
+  <li>whether your browser supports silent notifications.</li>
+</ul>
+<p>The service stores these, together with a random identifier it creates, the time your next notification is due, and the date you subscribed. It also keeps a small record for each notification date, made up of that identifier, the date and the delivery status, so that you receive each notification once.</p>
+<p>This information is technical. It does not include your name or email address, and the service does not record any account, device identifier of its own, or analytics identifier. It is not anonymous, however: the endpoint address is unique to your installation of the app, so please treat it as information that can identify that installation.</p>
+<p>Whenever you open the app, if your time zone or your browser’s silent-notification support has changed, the app sends the updated value to the service.</p>
+
+<h2>What it is used for</h2>
+<p>This information is used only to work out which notification, if any, is due on your local date (a feast day, the start of a sacred month, a lunar observance or the Sunday reminder), to send it at the right time of morning for your time zone, and to avoid sending it twice. It is not used for advertising, profiling or analytics, and the Chapel does not sell it.</p>
+
+<h2>Who else is involved</h2>
+<ul>
+  <li><strong>Cloudflare</strong> hosts and processes the notification service (its Worker, database and message queue). The service has Cloudflare’s operational logging switched on, so Cloudflare may also hold technical request and error logs for it under Cloudflare’s own terms.</li>
+  <li><strong>Your browser’s or device’s push service</strong> (for example Apple, Google or Mozilla, depending on your device and browser) is used to deliver Web Push notifications. It receives each notification, sent in encrypted form, at your endpoint address.</li>
+</ul>
+
+<h2>Keeping and deleting it</h2>
+<p>Your subscription is kept until it is removed. It is removed when:</p>
+<ul>
+  <li>you switch notifications off in the app by tapping “Notifications on”, which asks the service to delete your subscription (this needs an internet connection, and if that request does not get through the record may remain); or</li>
+  <li>the push service reports, when a notification is next sent, that your subscription has expired or is no longer valid.</li>
+</ul>
+<p>If you switch notifications off only in your device or browser settings, or remove the app, the subscription may remain until the push service reports it as no longer valid.</p>
+<p>There is no fixed retention period and no scheduled clean-up. The small per-date delivery records described above (identifier, date and status) are not deleted automatically, including after a subscription is removed; they do not contain your endpoint address, keys or time zone.</p>
+
+<h2>Turning notifications off</h2>
+<p>Tap “Notifications on” in the app to switch them off. You can also turn off notifications for the app in your device’s notification settings or your browser’s site settings.</p>
+
+<h2>Links to the Chapel website</h2>
+<p>On feast days the app offers a link to the Chapel’s page for that festival. These links open web pages outside the app, on the Chapel’s website, which has its own practices. This policy does not cover those pages.</p>
+
+<h2>Questions</h2>
+<p>If you have a question about this policy or about your notification data, please contact the Chapel through its website: <a href="https://www.mother-god.com/" target="_blank" rel="noopener noreferrer">www.mother-god.com</a>.</p>
+
+<hr>
+<p class="back"><a href="./">&larr; Return to the Sacred Calendar</a></p>
+
+</main>
+</body>
+</html>
