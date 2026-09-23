@@ -13,6 +13,7 @@
   var elSeason  = document.getElementById("cal-season");
   var elFeast   = document.getElementById("cal-feast");
   var elLink    = document.getElementById("cal-feast-link");
+  var elPicture = document.getElementById("cal-picture");
   var elProfane = document.getElementById("cal-profane");
 
   // ── Render ────────────────────────────────────────────────────────
@@ -26,6 +27,7 @@
       elSeason.textContent = "";
       elFeast.textContent  = "The Day that Has No Date";
       elLink.hidden        = true;
+      if (elPicture) elPicture.hidden = true;
       elCard.classList.add("cal-card--no-civil");
       return;
     }
@@ -50,6 +52,17 @@
       var lo = C.getLunarObservance(now);
       elFeast.textContent = lo.text || "";
       elLink.hidden       = true;
+    }
+
+    // Picture — shown when getPicture returns a path; hidden on feast-URL days
+    if (elPicture) {
+      var pic = C.getPicture(now);
+      if (pic) {
+        elPicture.src    = pic;
+        elPicture.hidden = false;
+      } else {
+        elPicture.hidden = true;
+      }
     }
 
     // Civil date — suppressed during Moura (and Hiatus, handled above)
