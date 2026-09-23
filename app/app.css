@@ -203,6 +203,27 @@ body {
   opacity: 0.6;
 }
 
+/* ── Privacy policy link ────────────────────────────────────────── */
+/* Always visible, beneath the notification opt-in row. */
+.cal-privacy {
+  margin-top: 1.2rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+}
+.cal-privacy a {
+  color: var(--dim);
+  opacity: 0.8;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--rule);
+  -webkit-tap-highlight-color: transparent;
+}
+.cal-privacy a:hover,
+.cal-privacy a:focus-visible {
+  color: var(--accent);
+  outline: none;
+}
+
 /* ── Sacred picture ─────────────────────────────────────────────── */
 /* Shown on ordinary non-feast days; hidden on feast-URL days, Hiatus,
    Moura feast days, and before the anchor date. */
