@@ -2,6 +2,7 @@
 ## Release and maintenance documentation
 
 **Record date:** 25 September 2026  
+**Last updated:** 26 September 2026 (lunar-symbol release; see section 10, "Release record — 26 September 2026")  
 **Status:** Live PWA; one available iPhone/iPad tester reports that it works fine. This is encouraging feedback, **not** a claim that every device, notification scenario or offline scenario has been verified.  
 **Document scope:** Apple-facing installable web app, its static hosting and Cloudflare notification backend. Android and Windows applications are separate products and are not changed by the procedures here.
 
@@ -13,14 +14,15 @@
 | GitHub repository | `Chapel-Of-Our-Mother-God/Apple-Sacred-Calendar` |
 | Live PWA branch | `pwa-build` (GitHub Pages) |
 | Other branch | `main` is the embeddable widget; **not** the live PWA |
-| Latest documented repo commit | `675f2c05488b703eea1162ff502ab11771f4a6ea` — `Sync production queue Worker source` |
+| Latest documented repo commit | `03112b42067c5fd18b1e57473919dfaf4b3af29a` — `Fix lunar symbols in PWA display and notifications` |
+| Worker source synchronization commit | `675f2c0` — `Sync production queue Worker source` |
 | Picture implementation commit | `43f6630` — `Add Sacred Calendar web pictures` |
 | PWA privacy-policy commit | `3836683` — `Add PWA privacy policy` |
-| Service-worker cache version | `v7` after the PWA privacy-policy update |
+| Service-worker cache version | `v8` (bumped from `v7`, which followed the PWA privacy-policy update, for the lunar-symbol update) |
 | Static site host | GitHub Pages |
 | Push backend | Cloudflare Worker + D1 + Queues (including dead-letter queue) |
 | Worker deployment | Manual; pushing GitHub code does **not** deploy the Worker |
-| Current documented production Worker version | `92b321dd-9166-4e98-9b04-44b49546c21d` (100% active when verified) |
+| Current documented production Worker version | `8f49ea0f-8c2b-4978-a336-c81bfcfc1587` (100% active when verified on 26 September 2026; it replaced `92b321dd-9166-4e98-9b04-44b49546c21d`, the version verified on 25 September 2026) |
 | Working GitHub clone on development PC | `C:\Users\candr\Videos\Github\Apple-Sacred-Calendar` |
 | Original non-Git queue-era copy | `C:\Users\candr\Videos\Claude Code\Apple-Sacred-Calendar` |
 
@@ -68,7 +70,7 @@ Relevant PWA implementation: `calendar/pictures.js`, `app/main.js`, `app/app.css
 
 The maintained PWA is on `pwa-build`. Changes to the static app are committed and pushed to that branch; GitHub Pages serves the branch. The `main` branch contains a different, embeddable widget and should not be merged or repurposed for cosmetic tidiness.
 
-The current documented frontend state includes the picture changes, PWA `privacy.html`, its link from the app and service-worker cache **v7**. The privacy update precached the privacy page. A Pages push and a Cloudflare Worker deployment are **different operations**.
+The current documented frontend state includes the picture changes, PWA `privacy.html`, its link from the app and service-worker cache **v8**. The privacy update (cache v7) precached the privacy page; v8 was introduced with the lunar-symbol update. A Pages push and a Cloudflare Worker deployment are **different operations**.
 
 For a future front-end release: inspect the current `pwa-build` status; isolate the requested change; run its relevant tests; review the file diff and secret exposure; update the service-worker cache/version when changed assets require it; commit and push only intended files; then check the live URL and a real Apple device. Do not assume that a successful Git push proves an updated service worker has activated on every installed phone.
 
@@ -105,6 +107,8 @@ The Worker imports shared `calendar/data.js`, `calendar/engine.js` and `calendar
 Cloudflare reported 100% of the active deployment on version `92b321dd-9166-4e98-9b04-44b49546c21d`. A read-only fetch of its active module returned `index.js` of **47,923 bytes**. A local `wrangler deploy --dry-run` using Wrangler **3.114.17** generated the same 47,923-byte module, with matching SHA-256 and a raw byte-for-byte comparison. Both the original deploy and dry-run reported **46.80 KiB**, gzip **12.74 KiB**. Production bindings/configuration were checked against `wrangler.toml`. The source sync then copied only 10 intended files to GitHub; Worker tests reported **179/179 passed across 7 files**, and `pwa-build` was clean and synchronized after push.
 
 These observations prove the executable active bundle matched the locally built queue-era Worker at verification time. Tests, SQL migrations, package manifests and TOML comments are not part of that executable bundle. The proof is a dated record, not a guarantee that future Cloudflare changes cannot occur.
+
+The evidence in this subsection describes version `92b321dd-9166-4e98-9b04-44b49546c21d`, which was the active version on 25 September 2026. It was superseded by version `8f49ea0f-8c2b-4978-a336-c81bfcfc1587` on 26 September 2026 (see the 26 September 2026 release record in section 10); it is retained as the original production-verification record.
 
 ### Deployment safety
 
@@ -163,3 +167,25 @@ An uninstall/reinstall can clear a tester's stale installed app, but **do not as
 | Apple tester feedback | One tester says it works fine; detailed offline/push scenarios not independently recorded as passed |
 
 **Open only as needed:** capture the tester's device/iOS version if a bug emerges; check offline and push behavior on real hardware when convenient; update this record after any future production deployment or materially changed test result. No new coding work is required solely because the second tester is unavailable.
+
+### Release record — 26 September 2026 (lunar symbols)
+
+The lunar symbol `🕀` rendered incorrectly on phones. It was replaced in both the on-screen lunar text and the push notification text. The wording, calendar calculations, timing, precedence, pictures, privacy, subscriptions and queue infrastructure were not changed.
+
+| Item | Recorded state at 26 Sep 2026 |
+|---|---|
+| Symbols replaced | New Moon 🌑, Day of Artemis 🌒, Full Moon 🌕, Half Moon Day 🌗 (defined once in `calendar/lunar.js`, shared by the app and the Worker) |
+| Frontend commit | `03112b4` — `Fix lunar symbols in PWA display and notifications` (`calendar/lunar.js`, `sw.js`, `tests/tests.html`, `worker/tests/notify.test.js`, this document) |
+| Service worker | `CACHE_NAME` changed from `sacred-calendar-v7` to `sacred-calendar-v8`; caching strategy, precache list and push handler unchanged |
+| Frontend tests | 263/263 passed (`tests/tests.html`, run in a browser against a local server) |
+| Worker tests | 179/179 passed across 7 test files (`npm ci` from the existing lockfile; dependencies and lockfiles unchanged) |
+| GitHub Pages | Verified serving the updated `calendar/lunar.js` (new symbols, old symbol absent) and `sw.js` (`v8`), both matching the committed files |
+| Worker dry-run | `wrangler deploy --dry-run` with Wrangler 3.114.17 from the GitHub clone's `worker/` folder (not the old queue-era folder) produced a 47,923-byte bundle; compared with the then-active production bundle, only the four lunar-symbol lines differed |
+| Production Worker deployment | Version `8f49ea0f-8c2b-4978-a336-c81bfcfc1587`, deployment ID `ab71b05c-632e-459d-8390-ab8124a5360b`, created 26 September 2026 12:08:35 UTC; replaced `92b321dd-9166-4e98-9b04-44b49546c21d` |
+| Post-deployment verification | New version verified 100% active; the active bundle contains all four new symbols (`\u{1F311}`, `\u{1F312}`, `\u{1F315}`, `\u{1F317}`) and none of the old symbol (`\u{1F540}`) |
+| Configuration | Bindings (D1 `DB`, `PUSH_QUEUE`, VAPID secrets, `VAPID_SUBJECT`), cron `*/5 * * * *`, queue consumer settings, dead-letter queue and observability all unchanged from the 25 September verification; no D1, queue, secret or subscription changes |
+
+**Not yet verified:**
+
+- Actual delivery of a push notification carrying the new symbols has **not** been verified on a phone. The first real lunar-day notification received by a subscribed device will confirm it. A notification already queued when the Worker deployment completed could still have shown the old symbol.
+- Activation of service-worker cache `v8` on the installed PWA has **not** been independently confirmed on a device.
