@@ -42,10 +42,10 @@ To replace an old installed copy, press and hold its Home Screen icon and choose
 - Regular dates, Moura, Kala and the Hiatus have distinct display rules. Do not make calendar logic dependent on the day the app was installed.
 - Feast days have highest priority for display/notifications. Lower-priority lunar and Sunday material must not compete with a feast on the same sacred day.
 - Canonical lunar text:
-  - New Moon: `🕀 New moon: Hail to Our Mother!`
-  - Day of Artemis: `🕀 Day of Artemis: Holy Lady, slay our false self.`
-  - Full Moon: `🕀 Full Moon : Praise to Our Mother!`
-  - Half Moon: `🕀 Half Moon Day Beloved Daughter, have Mercy on us.`
+  - New Moon: `🌑 New moon: Hail to Our Mother!`
+  - Day of Artemis: `🌒 Day of Artemis: Holy Lady, slay our false self.`
+  - Full Moon: `🌕 Full Moon : Praise to Our Mother!`
+  - Half Moon: `🌗 Half Moon Day Beloved Daughter, have Mercy on us.`
 - Day of Artemis occurs once per lunar cycle, on the fifth day after New Moon.
 - Half Moon Day occurs once per lunar cycle: take the midpoint between Full Moon and the following New Moon, find the sacred day owning that instant using the 05:00 boundary, then choose the nearest Monday by calendar-day count.
 - Sunday reminder: `Sunday - Day of Our Divine Mother`, with the sacred date.

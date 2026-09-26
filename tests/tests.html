@@ -654,15 +654,15 @@ group("20. Canonical lunar observance texts — exact wording");
 
 {
   var nm = C.getLunarObservance(new Date(2025, 2, 29, 12, 0, 0));
-  ok("New moon text", nm.text, "🕀 New moon: Hail to Our Mother!");
+  ok("New moon text", nm.text, "🌑 New moon: Hail to Our Mother!");
 }
 {
   var fm = C.getLunarObservance(new Date(2025, 2, 14, 12, 0, 0));
-  ok("Full Moon text", fm.text, "🕀 Full Moon : Praise to Our Mother!");
+  ok("Full Moon text", fm.text, "🌕 Full Moon : Praise to Our Mother!");
 }
 {
   var art = C.getLunarObservance(new Date(2025, 3, 3, 12, 0, 0));
-  ok("Day of Artemis text", art.text, "🕀 Day of Artemis: Holy Lady, slay our false self.");
+  ok("Day of Artemis text", art.text, "🌒 Day of Artemis: Holy Lady, slay our false self.");
 }
 {
   // Find first Half Moon Day in 2025 Jan–Feb range
@@ -677,7 +677,7 @@ group("20. Canonical lunar observance texts — exact wording");
     }
   }
   ok("Half Moon Day text", hmText,
-     "🕀 Half Moon Day Beloved Daughter, have Mercy on us.");
+     "🌗 Half Moon Day Beloved Daughter, have Mercy on us.");
 }
 
 // ===========================================================================

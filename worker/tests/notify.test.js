@@ -107,25 +107,25 @@ describe('computeNotification — lunar observances', () => {
     // NM at 10:58 UTC; noon local (UTC) is well after the NM
     const n = computeNotification(utc('2025-03-29T12:00:00Z'), 'UTC');
     expect(n.type).toBe('lunar');
-    expect(n.body).toBe('🕀 New moon: Hail to Our Mother!');
+    expect(n.body).toBe('🌑 New moon: Hail to Our Mother!');
   });
 
   it('Full Moon 14 Mar 2025 → full-moon notification', () => {
     const n = computeNotification(utc('2025-03-14T12:00:00Z'), 'UTC');
     expect(n.type).toBe('lunar');
-    expect(n.body).toBe('🕀 Full Moon : Praise to Our Mother!');
+    expect(n.body).toBe('🌕 Full Moon : Praise to Our Mother!');
   });
 
   it('Day of Artemis 3 Apr 2025 (NM+5) → artemis notification', () => {
     const n = computeNotification(utc('2025-04-03T12:00:00Z'), 'UTC');
     expect(n.type).toBe('lunar');
-    expect(n.body).toBe('🕀 Day of Artemis: Holy Lady, slay our false self.');
+    expect(n.body).toBe('🌒 Day of Artemis: Holy Lady, slay our false self.');
   });
 
   it('Half Moon Day 20 Jan 2025 (FM→NM Mon) → half-moon notification', () => {
     const n = computeNotification(utc('2025-01-20T12:00:00Z'), 'UTC');
     expect(n.type).toBe('lunar');
-    expect(n.body).toBe('🕀 Half Moon Day Beloved Daughter, have Mercy on us.');
+    expect(n.body).toBe('🌗 Half Moon Day Beloved Daughter, have Mercy on us.');
   });
 });
 

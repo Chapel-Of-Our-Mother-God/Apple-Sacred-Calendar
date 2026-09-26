@@ -270,7 +270,7 @@
     for (var i = 0; i < ev.length; i++) {
       if (ev[i].type === 'nm' && sameDay(ev[i].sacred, eld)) {
         return { type: 'new-moon',
-                 text: '🕀 New moon: Hail to Our Mother!' };
+                 text: '🌑 New moon: Hail to Our Mother!' };
       }
     }
 
@@ -278,7 +278,7 @@
     for (var i = 0; i < ev.length; i++) {
       if (ev[i].type === 'fm' && sameDay(ev[i].sacred, eld)) {
         return { type: 'full-moon',
-                 text: '🕀 Full Moon : Praise to Our Mother!' };
+                 text: '🌕 Full Moon : Praise to Our Mother!' };
       }
     }
 
@@ -289,7 +289,7 @@
         var art   = new Date(nmDay.getFullYear(), nmDay.getMonth(), nmDay.getDate() + 5, 12, 0, 0);
         if (sameDay(art, eld)) {
           return { type: 'artemis',
-                   text: '🕀 Day of Artemis: Holy Lady, slay our false self.' };
+                   text: '🌒 Day of Artemis: Holy Lady, slay our false self.' };
         }
       }
     }
@@ -303,7 +303,7 @@
         var mon = nearestMonday(mid, timezone);
         if (sameDay(mon, eld)) {
           return { type: 'half-moon',
-                   text: '🕀 Half Moon Day Beloved Daughter, have Mercy on us.' };
+                   text: '🌗 Half Moon Day Beloved Daughter, have Mercy on us.' };
         }
       }
     }
